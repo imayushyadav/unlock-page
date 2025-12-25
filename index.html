@@ -60,13 +60,29 @@
 
   <div class="timer" id="timer">15</div>
 
-  <div class="btn" id="readyBtn" onclick="sendUnlock()">
-  ⚡ FILE IS READY
-</div>
+  <div class="btn" id="readyBtn" style="display:none;" onclick="sendUnlock()">
+    ⚡ FILE IS READY
+  </div>
 </div>
 
 <script>
   const params = new URLSearchParams(window.location.search);
+
+  // 🔥 TIMER LOGIC 
+  let timeLeft = 15;
+  const timerEl = document.getElementById("timer");
+  const btn = document.getElementById("readyBtn");
+
+  const interval = setInterval(() => {
+    timeLeft--;
+    timerEl.innerText = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      timerEl.innerText = "READY";
+      btn.style.display = "block";
+    }
+  }, 1000);
 
   function sendUnlock() {
     fetch('/unlock/send', {
@@ -82,7 +98,8 @@
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        document.body.innerHTML = '<h2 style="color:white;text-align:center;">✅ File sent on Telegram</h2>';
+        document.body.innerHTML =
+          '<h2 style="color:white;text-align:center;">✅ File sent on Telegram</h2>';
       } else {
         alert('Unlock failed');
       }
@@ -92,3 +109,4 @@
 
 </body>
 </html>
+
