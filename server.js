@@ -10,6 +10,9 @@ app.use(express.static(__dirname));
 
 // ENV variables (Render se aayenge)
 const SECRET = process.env.WEB_SECRET;
+if (!SECRET) {
+  console.error("❌ WEB_SECRET missing");
+}
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const PRIVATE_CHANNEL_ID = process.env.PRIVATE_CHANNEL_ID;
 
