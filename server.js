@@ -5,9 +5,8 @@ const axios = require('axios');
 
 const app = express();
 
-const SECRET = 'MY_SUPER_SECRET_987@#'; // SAME as bot.js
-const BOT_TOKEN = '8359655406:AAE3jiPZKnE_CGRFBLdwZ1-a7YsuYKBbUjM'; // SAME bot token
-const PRIVATE_CHANNEL_ID = -1003686844186;
+const SECRET = process.env.SECRET;
+
 
 app.use(express.json());
 
@@ -77,3 +76,4 @@ app.post('/unlock/send', async (req, res) => {
 app.listen(3000, () => {
   console.log('Unlock server running on port 3000');
 });
+
