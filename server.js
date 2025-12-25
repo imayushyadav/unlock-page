@@ -5,60 +5,44 @@ const axios = require('axios');
 
 const app = express();
 
-const SECRET = process.env.SECRET;
- // SAME as bot.js
-
-
 app.use(express.json());
+app.use(express.static(__dirname));
 
-/**
- * Validate unlock link & serve page
- */
+// ENV variables (Render se aayenge)
+const SECRET = process.env.WEB_SECRET;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const PRIVATE_CHANNEL_ID = process.env.PRIVATE_CHANNEL_ID;
+
+// 1️⃣ UI SERVE ONLY (NO VALIDATION HERE)
 app.get('/unlock', (req, res) => {
-
-  const { uid, fid, ts, sig } = req.query;
-
-  if (!uid || !fid || !ts || !sig) {
-    return res.status(400).send('Invalid request');
-  }
-
-  // expire after 5 minutes
-  if (Date.now() - Number(ts) > 5 * 60 * 1000) {
-    return res.status(403).send('Link expired');
-  }
-
-  const check = crypto
-    .createHash('sha256')
-    .update(uid + fid + ts + SECRET)
-    .digest('hex');
-
-  if (check !== sig) {
-    return res.status(403).send('Invalid signature');
-  }
-
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-/**
- * FINAL UNLOCK — send file
- */
+// 2️⃣ REAL VALIDATION + FILE SEND
 app.post('/unlock/send', async (req, res) => {
   const { uid, fid, ts, sig } = req.body;
 
   if (!uid || !fid || !ts || !sig) {
-    return res.status(400).json({ error: 'Invalid request' });
+    return res.status(400).json({ error: 'Invalid data' });
   }
 
-  const check = crypto
-    .createHash('sha256')
-    .update(uid + fid + ts + SECRET)
+  // link expiry (5 min)
+  if (Date.now() - Number(ts) > 5 * 60 * 1000) {
+    return res.status(403).json({ error: 'Link expired' });
+  }
+
+  // signature check
+  const checkSig = crypto
+    .createHmac('sha256', SECRET)
+    .update(`${uid}:${fid}:${ts}`)
     .digest('hex');
 
-  if (check !== sig) {
-    return res.status(403).json({ error: 'Invalid signature' });
+  if (checkSig !== sig) {
+    return res.status(403).json({ error: 'Bad signature' });
   }
 
   try {
+    // Send file/message via Telegram
     await axios.post(
       `https://api.telegram.org/bot${BOT_TOKEN}/copyMessage`,
       {
@@ -68,14 +52,14 @@ app.post('/unlock/send', async (req, res) => {
       }
     );
 
-    return res.json({ success: true });
-  } catch (err) {
-    return res.status(500).json({ error: 'Telegram error' });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Telegram error' });
   }
 });
 
+// PORT (Render auto)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log('Server running on port', PORT);
 });
-
