@@ -44,14 +44,17 @@ function unlock() {
   })
   .then(r => r.json())
   .then(d => {
-    document.body.innerHTML =
-      d.success
-      ? '<h2 style="color:white">✅ File sent on Telegram</h2>'
-      : '<h2 style="color:red">❌ Failed</h2>';
+    if (d.redirect) {
+      window.location.href = d.redirect;
+    } else {
+      document.body.innerHTML =
+        '<h2 style="color:red">❌ Failed</h2>';
+    }
   })
   .catch(() => {
     document.body.innerHTML =
       '<h2 style="color:red">❌ Server error</h2>';
   });
 }
+
 </script>

@@ -1,15 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const axios = require('axios');
 
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const PRIVATE_CHANNEL_ID = Number(process.env.PRIVATE_CHANNEL_ID);
 const WEB_SECRET = process.env.WEB_SECRET;
+const BOT_USERNAME = process.env.BOT_USERNAME;
 
 /* ADS PAGE */
 app.get('/ads/video', (_, res) => {
@@ -20,29 +18,23 @@ app.get('/ads/shortlink', (_, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-/* 🔥 FINAL UNLOCK */
-app.post('/unlock/send', async (req, res) => {
-  const { uid, fid } = req.body;
+/* FINAL VERIFY → REDIRECT TO BOT */
+app.post('/unlock/send', (req, res) => {
+  const { uid, fid, method = 'video' } = req.body;
+  const ts = Date.now();
 
-  if (!uid || !fid) {
-    return res.status(400).json({ error: 'Invalid data' });
-  }
+  const token = crypto
+    .createHmac('sha256', WEB_SECRET)
+    .update(`${uid}:${fid}:${method}:${ts}`)
+    .digest('hex');
 
-  try {
-    await axios.post(
-      `https://api.telegram.org/bot${BOT_TOKEN}/copyMessage`,
-      {
-        chat_id: uid,
-        from_chat_id: PRIVATE_CHANNEL_ID,
-        message_id: fid   // ⚠️ fid MUST be message_id
-      }
-    );
+  const payload = Buffer.from(
+    JSON.stringify({ uid, fid, method, ts, token })
+  ).toString('base64');
 
-    res.json({ success: true });
-  } catch (e) {
-    console.error('Telegram error:', e.response?.data);
-    res.status(500).json({ error: 'Telegram failed' });
-  }
+  res.json({
+    redirect: `https://t.me/${BOT_USERNAME}?start=verify_${payload}`
+  });
 });
 
 app.get('/', (_, res) => res.send('Unlock server alive'));
