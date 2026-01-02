@@ -10,15 +10,15 @@
 
 <div style="background:#111827;padding:25px;border-radius:12px;text-align:center;width:300px">
   <h3>🔐 Unlocking Your File</h3>
-  <p>Click below to continue</p>
+  <p id="info">Click below to continue</p>
 
-  <!-- Action button -->
+  <!-- Action button (ONLY for Watch Video) -->
   <button id="adBtn"
     style="padding:12px;background:#3b82f6;border:none;border-radius:8px;font-weight:bold;color:white">
     ▶ CONTINUE TO WATCH AD
   </button>
 
-  <!-- Small timer (future ready) -->
+  <!-- Timer -->
   <p id="timer" style="margin-top:15px;display:none">Please wait…</p>
 
   <!-- Final button -->
@@ -34,22 +34,33 @@
 const params = new URLSearchParams(window.location.search);
 const uid = params.get('uid');
 const fid = params.get('fid');
+const from = params.get('from'); // shortlink or null
 
 /* ===== ELEMENTS ===== */
 const adBtn = document.getElementById('adBtn');
 const readyBtn = document.getElementById('readyBtn');
 const timerEl = document.getElementById('timer');
+const info = document.getElementById('info');
 
 /* ===== CONFIG ===== */
-let timerSeconds = 5; // 🔥 abhi 5 sec, baad me easily change
+let timerSeconds = 5;
 let popupOpened = false;
 
-/* ===== AD BUTTON CLICK ===== */
+/* ===== SHORTLINK FLOW ===== */
+if (from === 'shortlink') {
+  // No popup here
+  adBtn.style.display = 'none';
+  info.innerText = 'Please wait…';
+  timerEl.style.display = 'block';
+  startTimer();
+}
+
+/* ===== WATCH VIDEO FLOW ===== */
 adBtn.onclick = () => {
   if (popupOpened) return;
   popupOpened = true;
 
-  // Monetag popup (user initiated → low block risk)
+  // Monetag popup (SAFE: user click)
   window.open(
     'https://otieu.com/4/10372652',
     '_blank'
@@ -57,7 +68,6 @@ adBtn.onclick = () => {
 
   adBtn.style.display = 'none';
   timerEl.style.display = 'block';
-
   startTimer();
 };
 
