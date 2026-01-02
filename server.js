@@ -7,7 +7,11 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
 const WEB_SECRET = process.env.WEB_SECRET;
-const BOT_USERNAME = process.env.BOT_USERNAME;
+const BOT_USERNAME = process.env.BOT_USERNAME; // MUST EXIST
+
+if (!BOT_USERNAME) {
+  console.error('❌ BOT_USERNAME env missing in unlock-page');
+}
 
 /* ADS PAGE */
 app.get('/ads/video', (_, res) => {
@@ -21,6 +25,11 @@ app.get('/ads/shortlink', (_, res) => {
 /* FINAL VERIFY → REDIRECT TO BOT */
 app.post('/unlock/send', (req, res) => {
   const { uid, fid, method = 'video' } = req.body;
+
+  if (!uid || !fid) {
+    return res.json({ error: 'Invalid payload' });
+  }
+
   const ts = Date.now();
 
   const token = crypto
