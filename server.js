@@ -24,25 +24,11 @@ app.get('/ads/shortlink', (_, res) => {
 
 /* FINAL VERIFY → REDIRECT TO BOT */
 app.post('/unlock/send', (req, res) => {
-    console.log('UNLOCK HIT', req.body); 
-  const { uid, fid, method = 'video' } = req.body;
-
-  if (!uid || !fid) {
-    return res.json({ error: 'Invalid payload' });
-  }
-
-  const ts = Date.now();
-
-  const token = crypto
-    .createHmac('sha256', WEB_SECRET)
-    .update(`${uid}:${fid}:${method}:${ts}`)
-    .digest('hex');
+  const { uid, fid } = req.body;
 
   const payload = Buffer.from(
-    JSON.stringify({ uid, fid, method, ts, token })
+    JSON.stringify({ uid, fid })
   ).toString('base64');
-
-  console.log('REDIRECTING TO BOT'); 
 
   res.json({
     redirect: `https://t.me/${BOT_USERNAME}?start=verify_${payload}`
