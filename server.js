@@ -24,6 +24,7 @@ app.get('/ads/shortlink', (_, res) => {
 
 /* FINAL VERIFY → REDIRECT TO BOT */
 app.post('/unlock/send', (req, res) => {
+    console.log('UNLOCK HIT', req.body); 
   const { uid, fid, method = 'video' } = req.body;
 
   if (!uid || !fid) {
@@ -40,6 +41,8 @@ app.post('/unlock/send', (req, res) => {
   const payload = Buffer.from(
     JSON.stringify({ uid, fid, method, ts, token })
   ).toString('base64');
+
+  console.log('REDIRECTING TO BOT'); 
 
   res.json({
     redirect: `https://t.me/${BOT_USERNAME}?start=verify_${payload}`
