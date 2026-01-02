@@ -10,65 +10,75 @@
 
 <div style="background:#111827;padding:25px;border-radius:12px;text-align:center;width:300px">
   <h3>🔐 Unlocking Your File</h3>
-  <p>Please stay on this page</p>
+  <p>Click below to continue</p>
 
-  <h1 id="timer">15</h1>
+  <!-- Action button -->
+  <button id="adBtn"
+    style="padding:12px;background:#3b82f6;border:none;border-radius:8px;font-weight:bold;color:white">
+    ▶ CONTINUE TO WATCH AD
+  </button>
 
-  <button id="btn"
-    style="display:none;padding:12px;background:#22c55e;border:none;border-radius:8px;font-weight:bold"
+  <!-- Small timer (future ready) -->
+  <p id="timer" style="margin-top:15px;display:none">Please wait…</p>
+
+  <!-- Final button -->
+  <button id="readyBtn"
+    style="display:none;margin-top:15px;padding:12px;background:#22c55e;border:none;border-radius:8px;font-weight:bold"
     onclick="unlock()">
-    ⚡ MOVIE IS READY
+    ⚡ FILE IS READY
   </button>
 </div>
 
 <script>
-/* ================= PARAMS ================= */
+/* ===== PARAMS ===== */
 const params = new URLSearchParams(window.location.search);
 const uid = params.get('uid');
 const fid = params.get('fid');
 
-/* ================= ELEMENTS ================= */
-const timer = document.getElementById('timer');
-const btn = document.getElementById('btn');
+/* ===== ELEMENTS ===== */
+const adBtn = document.getElementById('adBtn');
+const readyBtn = document.getElementById('readyBtn');
+const timerEl = document.getElementById('timer');
 
-/* ================= STATE ================= */
-let timeLeft = 15;
-let timerStarted = false;
-let adOpened = false;
+/* ===== CONFIG ===== */
+let timerSeconds = 5; // 🔥 abhi 5 sec, baad me easily change
+let popupOpened = false;
 
-/* ================= AD FIRST ================= */
-// First user click → ad opens → THEN timer starts
-document.addEventListener('click', () => {
-  if (adOpened) return;
+/* ===== AD BUTTON CLICK ===== */
+adBtn.onclick = () => {
+  if (popupOpened) return;
+  popupOpened = true;
 
-  adOpened = true;
-
+  // Monetag popup (user initiated → low block risk)
   window.open(
-    'https://otieu.com/4/10372652', // 🔥 Monetag Direct Link
+    'https://otieu.com/4/10372652',
     '_blank'
   );
 
-  startTimer(); // ⏳ timer AFTER ad
-});
+  adBtn.style.display = 'none';
+  timerEl.style.display = 'block';
 
-/* ================= TIMER ================= */
+  startTimer();
+};
+
+/* ===== TIMER ===== */
 function startTimer() {
-  if (timerStarted) return;
-  timerStarted = true;
+  let t = timerSeconds;
+  timerEl.innerText = `Please wait ${t}s`;
 
   const interval = setInterval(() => {
-    timer.innerText = timeLeft;
-    timeLeft--;
+    t--;
+    timerEl.innerText = `Please wait ${t}s`;
 
-    if (timeLeft < 0) {
+    if (t <= 0) {
       clearInterval(interval);
-      timer.innerText = 'READY';
-      btn.style.display = 'block';
+      timerEl.style.display = 'none';
+      readyBtn.style.display = 'block';
     }
   }, 1000);
 }
 
-/* ================= UNLOCK ================= */
+/* ===== UNLOCK ===== */
 function unlock() {
   fetch('/unlock/send', {
     method: 'POST',
@@ -80,13 +90,8 @@ function unlock() {
     if (d.redirect) {
       window.location.href = d.redirect;
     } else {
-      document.body.innerHTML =
-        '<h2 style="color:red">❌ Failed</h2>';
+      document.body.innerHTML = '<h2 style="color:red">❌ Failed</h2>';
     }
-  })
-  .catch(() => {
-    document.body.innerHTML =
-      '<h2 style="color:red">❌ Server error</h2>';
   });
 }
 </script>
