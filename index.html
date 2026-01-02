@@ -5,6 +5,7 @@
   <title>Unlocking File</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+
 <body style="background:#0f172a;color:white;display:flex;justify-content:center;align-items:center;height:100vh">
 
 <div style="background:#111827;padding:25px;border-radius:12px;text-align:center;width:300px">
@@ -13,29 +14,61 @@
 
   <h1 id="timer">15</h1>
 
-  <button id="btn" style="display:none;padding:12px;background:#22c55e;border:none;border-radius:8px;font-weight:bold"
-    onclick="unlock()">⚡ FILE IS READY</button>
+  <button id="btn"
+    style="display:none;padding:12px;background:#22c55e;border:none;border-radius:8px;font-weight:bold"
+    onclick="unlock()">
+    ⚡ MOVIE IS READY
+  </button>
 </div>
 
 <script>
+/* ================= PARAMS ================= */
 const params = new URLSearchParams(window.location.search);
 const uid = params.get('uid');
 const fid = params.get('fid');
 
-let t = 15;
+/* ================= ELEMENTS ================= */
 const timer = document.getElementById('timer');
 const btn = document.getElementById('btn');
 
-const i = setInterval(() => {
-  t--;
-  timer.innerText = t;
-  if (t <= 0) {
-    clearInterval(i);
-    timer.innerText = 'READY';
-    btn.style.display = 'block';
-  }
-}, 1000);
+/* ================= STATE ================= */
+let timeLeft = 15;
+let timerStarted = false;
+let adOpened = false;
 
+/* ================= AD FIRST ================= */
+// First user click → ad opens → THEN timer starts
+document.addEventListener('click', () => {
+  if (adOpened) return;
+
+  adOpened = true;
+
+  window.open(
+    'https://otieu.com/4/10372652', // 🔥 Monetag Direct Link
+    '_blank'
+  );
+
+  startTimer(); // ⏳ timer AFTER ad
+});
+
+/* ================= TIMER ================= */
+function startTimer() {
+  if (timerStarted) return;
+  timerStarted = true;
+
+  const interval = setInterval(() => {
+    timer.innerText = timeLeft;
+    timeLeft--;
+
+    if (timeLeft < 0) {
+      clearInterval(interval);
+      timer.innerText = 'READY';
+      btn.style.display = 'block';
+    }
+  }, 1000);
+}
+
+/* ================= UNLOCK ================= */
 function unlock() {
   fetch('/unlock/send', {
     method: 'POST',
@@ -56,20 +89,7 @@ function unlock() {
       '<h2 style="color:red">❌ Server error</h2>';
   });
 }
-
-</script>
-<script>
-  // Monetag Direct Link - OPEN ONCE
-  let adOpened = false;
-
-  window.addEventListener('click', () => {
-    if (adOpened) return;
-    adOpened = true;
-
-    window.open(
-      'https://otieu.com/4/10372652',
-      '_blank'
-    );
-  });
 </script>
 
+</body>
+</html>
